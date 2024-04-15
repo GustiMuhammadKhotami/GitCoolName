@@ -9,7 +9,7 @@
 <hr>
 <p>Gambar dibawah digenerate secara random dari website <strong>ephoto360</strong>. Gambar akan selalu berubah setiap kali halaman direfresh.</p>
 <p align="center">
-  <img src="https://gt-gitcoolname-api.vercel.app/gusti?text=Khotami" width="70%"/ alt="tidak bisa menampilkan image">
+  <img src="https://gt-gitcoolname-api.vercel.app/gusti?text=Khotami" width="100%"/ alt="tidak bisa menampilkan image">
 </p>
 <br>
 <h1 align="center">Catatan Penting</h1>
