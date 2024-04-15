@@ -1,6 +1,6 @@
 <div align="center">
   <h1>PyEphotoAPI</h1>
-  <span>Source Code: <a href="https://github.com/GustiMuhammadKhotami/GitCoolName">PyEphotoAPI</a></span>
+  <span>Source Code: <a href="https://github.com/GustiMuhammadKhotami/GitCoolName">GitCoolName</a></span>
 </div>
 <hr>
 <p align="center">Dapatkan efek nama keren yang dihasilkan secara dinamis untuk <strong>README.md</strong> github anda</p>
