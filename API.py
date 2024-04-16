@@ -3,14 +3,13 @@ import random, requests, re, json
 
 app = Flask("Ephoto360-Random-Image-Generator-For-Github")
 
-session = False
-payload = False
-asyncSession = requests.Session()
+client = False
 
 def createSession():
-    global session, payload
+    global client
+    session = requests.Session()
     url = "https://en.ephoto360.com/create-glossy-silver-3d-text-effect-online-802.html"
-    req = asyncSession.get(url)
+    req = session.get(url)
     data = {
         "autocomplete0": "",
         "text": ["Gusti"],
@@ -19,16 +18,18 @@ def createSession():
         "build_server": re.search("name=\"build_server\" value=\"(.*?)\"", req.text).group(1),
         "build_server_id": re.search("name=\"build_server_id\" value=\"(.*?)\"", req.text).group(1),
     }
-    res = asyncSession.post(url, data=data)
-    jsonLoad = json.loads(re.search("name=\"form_value_input\" value=\"(.*?)\"", res.text).group(1).replace("&quot;", "\""))
-    del jsonLoad["text"]
-    session, payload = asyncSession, jsonLoad
+    res = session.post(url, data=data)
+    payload = json.loads(re.search("name=\"form_value_input\" value=\"(.*?)\"", res.text).group(1).replace("&quot;", "\""))
+    del payload["text"]
+    client = {
+        "session": session,
+        "payload": payload
+    }
 
 class EphotoModel:
-    def __init__(self, text, session, payload):
+    def __init__(self, text, client):
         self.text = text
-        self.host = "https://en.ephoto360.com"
-        self.urls = [
+        self.ids = [
             "809",
             "797",
             "767",
@@ -120,22 +121,21 @@ class EphotoModel:
             "61",
             "30",
         ]
-        self.session = session
-        self.payload = payload
+        self.client = client
 
-    def randomUrl(self):
-        return random.choice(self.urls)
+    def randomId(self):
+        return random.choice(self.ids)
 
     def getImage(self):
-        if not self.payload:
+        if not self.client:
             return False
-        self.payload["text[]"] = [self.text]
-        self.payload["id"] = self.randomUrl()
-        resp = self.session.post("https://en.ephoto360.com/effect/create-image", data=payload).json()
-        return self.getRaw(self.payload["build_server"] + resp.get("image"))
+        self.client.get("payload")["text[]"] = [self.text]
+        self.client.get("payload")["id"] = self.randomId()
+        resp = self.client.get("session").post("https://en.ephoto360.com/effect/create-image", data=self.client.get("payload")).json()
+        return self.getRaw(self.client.get("payload")["build_server"] + resp.get("image"))
 
     def getRaw(self, urlImage):
-        rawImage = self.session.get(urlImage, stream=True).raw
+        rawImage = self.client.get("session").get(urlImage, stream=True).raw
         return rawImage
 
 class EphotoView:
@@ -155,11 +155,10 @@ class EphotoController:
 
 @app.route("/gusti", methods=["GET"])
 def routehandler():
-    print(payload)
     teks = request.args.get("text")
     if not teks:
         return jsonify({"Error": "harus menyertakan parameter text"})
-    model = EphotoModel(teks, session, payload)
+    model = EphotoModel(teks, client)
     view = EphotoView()
     controller = EphotoController(model, view)
     retview = controller.response()
