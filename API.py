@@ -7,6 +7,7 @@ session = requests.Session()
 payload = False
 
 def createSession():
+    global payload
     url = "https://en.ephoto360.com/create-glossy-silver-3d-text-effect-online-802.html"
     req = session.get(url)
     data = {
@@ -18,7 +19,9 @@ def createSession():
         "build_server_id": re.search("name=\"build_server_id\" value=\"(.*?)\"", req.text).group(1),
     }
     res = session.post(url, data=data)
-    payload = json.loads(re.search("name=\"form_value_input\" value=\"(.*?)\"", res.text).group(1).replace("&quot;", "\"")).pop("text")
+    jsonload = json.loads(re.search("name=\"form_value_input\" value=\"(.*?)\"", res.text).group(1).replace("&quot;", "\""))
+    del jsonload["text"]
+    payload = jsonload
 
 class EphotoModel:
     def __init__(self, text, session, payload):
@@ -151,6 +154,7 @@ class EphotoController:
 
 @app.route("/gusti", methods=["GET"])
 def routehandler():
+    print(payload)
     teks = request.args.get("text")
     if not teks:
         return jsonify({"Error": "harus menyertakan parameter text"})
