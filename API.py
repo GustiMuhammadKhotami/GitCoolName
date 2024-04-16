@@ -3,11 +3,11 @@ import random, requests, re, json
 
 app = Flask("Ephoto360-Random-Image-Generator-For-Github")
 
-client = False
+client = {"session": False, "payload": False}
+session = requests.Session()
 
 def createSession():
     global client
-    session = requests.Session()
     url = "https://en.ephoto360.com/create-glossy-silver-3d-text-effect-online-802.html"
     req = session.get(url)
     data = {
@@ -121,21 +121,22 @@ class EphotoModel:
             "61",
             "30",
         ]
-        self.client = client
+        self.session = client.get("session")
+        self.payload = client.get("payload")
 
     def randomId(self):
         return random.choice(self.ids)
 
     def getImage(self):
-        if not self.client:
+        if not self.payload:
             return False
-        self.client.get("payload")["text[]"] = [self.text]
-        self.client.get("payload")["id"] = self.randomId()
-        resp = self.client.get("session").post("https://en.ephoto360.com/effect/create-image", data=self.client.get("payload")).json()
-        return self.getRaw(self.client.get("payload")["build_server"] + resp.get("image"))
+        self.payload["text[]"] = [self.text]
+        self.payload["id"] = self.randomId()
+        resp = self.session.post("https://en.ephoto360.com/effect/create-image", data=self.payload).json()
+        return self.getRaw(self.payload["build_server"] + resp.get("image"))
 
     def getRaw(self, urlImage):
-        rawImage = self.client.get("session").get(urlImage, stream=True).raw
+        rawImage = self.session.get(urlImage, stream=True).raw
         return rawImage
 
 class EphotoView:
