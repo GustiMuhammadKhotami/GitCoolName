@@ -3,13 +3,14 @@ import random, requests, re, json
 
 app = Flask("Ephoto360-Random-Image-Generator-For-Github")
 
-session = requests.Session()
+session = False
 payload = False
+asyncSession = requests.Session()
 
 def createSession():
-    global payload
+    global session, payload
     url = "https://en.ephoto360.com/create-glossy-silver-3d-text-effect-online-802.html"
-    req = session.get(url)
+    req = asyncSession.get(url)
     data = {
         "autocomplete0": "",
         "text": ["Gusti"],
@@ -18,10 +19,10 @@ def createSession():
         "build_server": re.search("name=\"build_server\" value=\"(.*?)\"", req.text).group(1),
         "build_server_id": re.search("name=\"build_server_id\" value=\"(.*?)\"", req.text).group(1),
     }
-    res = session.post(url, data=data)
+    res = asyncSession.post(url, data=data)
     jsonLoad = json.loads(re.search("name=\"form_value_input\" value=\"(.*?)\"", res.text).group(1).replace("&quot;", "\""))
     del jsonLoad["text"]
-    payload = jsonLoad
+    session, payload = asyncSession, jsonLoad
 
 class EphotoModel:
     def __init__(self, text, session, payload):
